@@ -9,6 +9,7 @@ import android.widget.Toast;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func1;
+import rx.subjects.BehaviorSubject;
 import rx.subjects.PublishSubject;
 
 /**
@@ -17,6 +18,8 @@ import rx.subjects.PublishSubject;
 public class BaseActivity extends AppCompatActivity {
     private final int LOGIN_REQUEST = 1;
     private SessionService mSessionService = new SessionService();
+
+    private BehaviorSubject<BaseActivity> mDestroyEvent = BehaviorSubject.create();
     private PublishSubject<Boolean> mLoginEvent = PublishSubject.create();
     private PublishSubject<Boolean> mLoginEventResult = PublishSubject.create();
 
@@ -24,6 +27,10 @@ public class BaseActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         bindLoginEvent();
+    }
+
+    protected Observable<BaseActivity> destroyEvent() {
+        return mDestroyEvent.asObservable();
     }
 
     private void bindLoginEvent() {
@@ -75,5 +82,11 @@ public class BaseActivity extends AppCompatActivity {
         if (requestCode == LOGIN_REQUEST) {
             mLoginEventResult.onNext(resultCode == RESULT_OK);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        mDestroyEvent.onNext(this);
+        super.onDestroy();
     }
 }

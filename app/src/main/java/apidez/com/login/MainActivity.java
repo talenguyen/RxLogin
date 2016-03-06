@@ -31,6 +31,7 @@ public class MainActivity extends BaseActivity {
     private void subscribeTask() {
         Observable.just("Hello World")
                 .compose(this.<String>checkLogin())
+                .takeUntil(destroyEvent())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Action1<String>() {
