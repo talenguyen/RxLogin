@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import apidez.com.login.session.Session;
+import apidez.com.login.session.SessionManager;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -13,17 +15,14 @@ import rx.schedulers.Schedulers;
 
 public class MainActivity extends BaseActivity {
 
-    private SessionManager<String> sessionManager;
+    private SessionManager sessionManager;
+    private LoginSessionRequest loginSessionRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sessionManager = new SessionManager<>(null, new SessionParser<String>() {
-            @Override
-            public String parse(Intent data) {
-                return data.getStringExtra("email");
-            }
-        });
+        loginSessionRequest = new LoginSessionRequest(this);
+        sessionManager = new SessionManager(null, loginSessionRequest);
         setContentView(R.layout.activity_main);
         setUpView();
     }
@@ -31,7 +30,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        sessionManager.onActivityResult(requestCode, resultCode, data);
+        loginSessionRequest.onActivityResult(requestCode, resultCode, data);
     }
 
     private void setUpView() {
@@ -45,11 +44,12 @@ public class MainActivity extends BaseActivity {
     }
 
     private void subscribeTask() {
-        sessionManager.getSessionStream(this, LoginActivity.class)
-                .flatMap(new Func1<String, Observable<String>>() {
+        sessionManager.getSession()
+                .flatMap(new Func1<Session, Observable<String>>() {
                     @Override
-                    public Observable<String> call(String s) {
-                        return Observable.just("Hello " + s);
+                    public Observable<String> call(Session session) {
+                        final String msg = "Hello " + ((EmailSession) session).getEmail();
+                        return Observable.just(msg);
                     }
                 })
                 .takeUntil(destroyEvent())
