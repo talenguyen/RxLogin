@@ -1,5 +1,6 @@
 package apidez.com.login;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
@@ -26,7 +27,9 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (checkLogin()) {
-                    setResult(RESULT_OK);
+                    final Intent data = new Intent();
+                    data.putExtra("email", "hello@world.com");
+                    setResult(RESULT_OK, data);
                     finish();
                 } else {
                     Toast.makeText(getApplicationContext(),
